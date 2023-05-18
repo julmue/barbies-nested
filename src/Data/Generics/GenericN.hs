@@ -39,30 +39,27 @@ import Data.Coerce
 
 data family Param (n :: Nat) (a :: k) :: k
 
-type family Indexed (t :: k) (i :: Nat) :: k where
+type Indexed :: forall k . k -> Nat -> k
+type family Indexed t i where
   Indexed (t a) i = Indexed t (i + 1) (Param i a)
   Indexed t _     = t
 
-type family FilterIndex (n :: Nat) (t :: k) :: k where
+type FilterIndex :: forall k . Nat -> k -> k
+type family FilterIndex n t where
   FilterIndex n (t (Param n a)) = FilterIndex n t (Param n a)
   FilterIndex n (t (Param _ a)) = FilterIndex n t a
   FilterIndex _ t = t
 
 newtype Rec (p :: Type) a x = Rec { unRec :: K1 R a x }
 
-type family Zip (a :: Type -> Type) (b :: Type -> Type) :: Type -> Type where
-  Zip (M1 mt m s) (M1 mt m t)
-    = M1 mt m (Zip s t)
-  Zip (l :+: r) (l' :+: r')
-    = Zip l l' :+: Zip r r'
-  Zip (l :*: r) (l' :*: r')
-    = Zip l l' :*: Zip r r'
-  Zip (Rec0 p) (Rec0 a)
-    = Rec p a
-  Zip U1 U1
-    = U1
-  Zip V1 V1
-    = V1
+type Zip :: (Type -> Type) -> (Type -> Type) -> Type -> Type
+type family Zip a b where
+  Zip (M1 mt m s) (M1 mt m t) = M1 mt m (Zip s t)
+  Zip (l :+: r) (l' :+: r') = Zip l l' :+: Zip r r'
+  Zip (l :*: r) (l' :*: r') = Zip l l' :*: Zip r r'
+  Zip (Rec0 p) (Rec0 a) = Rec p a
+  Zip U1 U1 = U1
+  Zip V1 V1 = V1
 
 
 class
