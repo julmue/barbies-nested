@@ -57,7 +57,7 @@ module Data.Functor.Barbie
     -- ** Utility functions
   , Cons.bdicts
   , Cons.bmapC
-  , Cons.bfoldMapC
+  -- , Cons.bfoldMapC
   , Cons.btraverseC
   , Cons.bpureC
   , Cons.bzipWithC
