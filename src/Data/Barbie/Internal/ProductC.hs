@@ -29,7 +29,7 @@ import Data.Functor.Product (Product (..))
 import Data.Kind(Type)
 import Data.Proxy(Proxy (..))
 
-class (ConstraintsB b, ProductB b) => ProductBC (b :: (k -> Type) -> Type) where
+class (ConstraintsB b, ProductB b) => ProductBC (b :: (Type -> Type) -> Type) where
   bdicts :: AllB c b => b (Dict c)
 
   default bdicts :: (CanDeriveProductBC c b, AllB c b) => b (Dict c)
@@ -43,7 +43,7 @@ type CanDeriveProductBC c b
     )
 
 {-# DEPRECATED buniqC "Use bpureC instead" #-}
-buniqC :: forall c f b . (AllB c b, ProductBC b) => (forall a . c a => f a) -> b f
+buniqC :: forall c f b . (AllB c b, ProductBC b, Functor f, Functor (Dict c)) => (forall a . c a => f a) -> b f
 buniqC x
   = bmap (requiringDict @c x) bdicts
 
@@ -105,19 +105,20 @@ instance c a => GProductBC c (Rec (P0 X a_or_pma) (X a))
   gbdicts = Rec (K1 Dict)
   {-# INLINE gbdicts #-}
 
-instance
-  ( ProductBC b
-  , AllB c b
-  ) => GProductBC c (Self (b' (P0 X)) (b X))
-                    (Rec (b' (P0 (Dict c))) (b (Dict c))) where
-  gbdicts = Rec $ K1 $ bdicts @_ @b
+-- FIXME: commented out because it doesn't compile
+-- instance
+--   ( ProductBC b
+--   , AllB c b
+--   ) => GProductBC c (Self (b' (P0 X)) (b X))
+--                     (Rec (b' (P0 (Dict c))) (b (Dict c))) where
+--   gbdicts = Rec $ K1 $ bdicts @_ @b
 
-instance
-  ( ProductBC b
-  , AllB c b
-  ) => GProductBC c (Other (b' (P0 X)) (b X))
-                    (Rec (b' (P0 (Dict c))) (b (Dict c))) where
-  gbdicts = Rec $ K1 $ bdicts @_ @b
+-- instance
+--   ( ProductBC b
+--   , AllB c b
+--   ) => GProductBC c (Other (b' (P0 X)) (b X))
+--                     (Rec (b' (P0 (Dict c))) (b (Dict c))) where
+--   gbdicts = Rec $ K1 $ bdicts @_ @b
 
 
 -- --------------------------------

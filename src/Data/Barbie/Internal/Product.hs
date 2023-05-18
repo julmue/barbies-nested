@@ -26,7 +26,7 @@ import Data.Generics.GenericN
 
 {-# DEPRECATED ProductB "Use ApplicativeB" #-}
 {-# DEPRECATED buniq "Use bpure" #-}
-class App.ApplicativeB b => ProductB (b :: (k -> Type) -> Type) where
+class App.ApplicativeB b => ProductB (b :: (Type -> Type) -> Type) where
   bprod :: b f -> b g -> b (f `Product` g)
 
   buniq :: (forall a . f a) -> b f
