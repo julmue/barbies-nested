@@ -35,7 +35,7 @@ class FunctorB (b :: (Type -> Type) -> Type) where
 
   default bmap
     :: forall f g
-    .  CanDeriveFunctorB b f g
+    .  (CanDeriveFunctorB b f g, Functor f, Functor g)
     => (forall a . f a -> g a) -> b f -> b g
   bmap = gbmapDefault
 
@@ -58,7 +58,7 @@ type CanDeriveFunctorB b f g
 
 -- | Default implementation of 'bmap' based on 'Generic'.
 gbmapDefault
-  :: CanDeriveFunctorB b f g
+  :: (CanDeriveFunctorB b f g, Functor f, Functor g)
   => (forall a . f a -> g a) -> b f -> b g
 gbmapDefault f
   = toP (Proxy @0) . gmap (Proxy @0) f . fromP (Proxy @0)
@@ -72,7 +72,7 @@ type P = Param
 
 -- b' is b, maybe with 'Param' annotations
 instance
-  ( FunctorB b
+  ( FunctorB b, Functor f, Functor g
   ) => GFunctor 0 f g (Rec (b' (P 0 f)) (b f))
                       (Rec (b' (P 0 g)) (b g))
   where
@@ -84,6 +84,8 @@ instance
 instance
   ( Functor h
   , FunctorB b
+  , Functor f
+  , Functor g
   ) => GFunctor 0 f g (Rec (h' (b' (P 0 f))) (h (b f)))
                       (Rec (h' (b' (P 0 g))) (h (b g)))
   where
@@ -96,6 +98,8 @@ instance
   ( Functor h
   , Functor m
   , FunctorB b
+  , Functor f
+  , Functor g
   ) => GFunctor 0 f g (Rec (m' (h' (b' (P 0 f)))) (m (h (b f))))
                       (Rec (m' (h' (b' (P 0 g)))) (m (h (b g))))
   where
