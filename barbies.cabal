@@ -111,6 +111,7 @@ library
     , StandaloneDeriving
     , TypeApplications
     , TypeOperators
+    , StandaloneKindSignatures
 
 test-suite barbies-test
   type: exitcode-stdio-1.0
