@@ -262,8 +262,8 @@ module Barbies
      -- | Some clothes make barbies look like containers, and we can make those
      --   types behave like normal 'Functor's.
 
-  --  , Containers.Container(..)
-  --  , Containers.ErrorContainer(..)
+   , Containers.Container(..)
+   , Containers.ErrorContainer(..)
 
     -- * Wrappers
 
