@@ -40,8 +40,8 @@ import Data.Proxy             (Proxy (..))
 --
 -- There is a default 'btraverse' implementation for 'Generic' types, so
 -- instances can derived automatically.
-class FunctorB b => TraversableB (b :: (k -> Type) -> Type) where
-  btraverse :: Applicative e => (forall a . f a -> e (g a)) -> b f -> e (b g)
+class FunctorB b => TraversableB (b :: (Type -> Type) -> Type) where
+  btraverse :: Applicative e => forall f g . (Functor f, Functor g) => (forall a . f a -> e (g a)) -> b f -> e (b g)
 
   default btraverse
     :: ( Applicative e, CanDeriveTraversableB b f g)
