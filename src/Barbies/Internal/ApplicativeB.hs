@@ -60,7 +60,7 @@ import Data.Generics.GenericN
 -- This corresponds rougly to record types (in the presence of sums, there would
 -- be several candidates for `bpure`), where every field is either a 'Monoid' or
 -- covered by the argument @f@.
-class FunctorB b => ApplicativeB (b :: (k -> Type) -> Type) where
+class FunctorB b => ApplicativeB (b :: (Type -> Type) -> Type) where
   bpure
     :: (forall a . f a)
     -> b f
@@ -94,7 +94,7 @@ bzip = bprod
 
 -- | An equivalent of 'unzip'.
 bunzip
-  :: ApplicativeB b
+  :: (ApplicativeB b, Functor f, Functor g)
   => b (f `Product` g)
   -> (b f, b g)
 bunzip bfg
@@ -102,7 +102,7 @@ bunzip bfg
 
 -- | An equivalent of 'Data.List.zipWith'.
 bzipWith
-  :: ApplicativeB b
+  :: (ApplicativeB b, Functor f, Functor g, Functor h)
   => (forall a. f a -> g a -> h a)
   -> b f
   -> b g
@@ -112,7 +112,7 @@ bzipWith f bf bg
 
 -- | An equivalent of 'Data.List.zipWith3'.
 bzipWith3
-  :: ApplicativeB b
+  :: (ApplicativeB b, Functor f, Functor g, Functor h, Functor i)
   => (forall a. f a -> g a -> h a -> i a)
   -> b f
   -> b g
@@ -125,7 +125,7 @@ bzipWith3 f bf bg bh
 
 -- | An equivalent of 'Data.List.zipWith4'.
 bzipWith4
-  :: ApplicativeB b
+  :: (ApplicativeB b, Functor f, Functor g, Functor h, Functor i, Functor j)
   => (forall a. f a -> g a -> h a -> i a -> j a)
   -> b f
   -> b g
