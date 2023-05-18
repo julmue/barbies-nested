@@ -4,24 +4,24 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 module Barbies.Internal.ConstraintsT
-  ( ConstraintsT(..)
-  , tmapC
-  , ttraverseC
-  , AllTF
-  , tdicts
-  , tpureC
-  , tmempty
-  , tzipWithC
-  , tzipWith3C
-  , tzipWith4C
-  , tfoldMapC
+  -- ( ConstraintsT(..)
+  -- , tmapC
+  -- , ttraverseC
+  -- , AllTF
+  -- , tdicts
+  -- , tpureC
+  -- , tmempty
+  -- , tzipWithC
+  -- , tzipWith3C
+  -- , tzipWith4C
+  -- , tfoldMapC
 
-  , CanDeriveConstraintsT
-  , gtaddDictsDefault
-  , GAllRepT
+  -- , CanDeriveConstraintsT
+  -- , gtaddDictsDefault
+  -- , GAllRepT
 
-  , TagSelf1, TagSelf1'
-  )
+  -- , TagSelf1, TagSelf1'
+  -- )
 
 where
 
@@ -80,22 +80,13 @@ class FunctorT t => ConstraintsT (t :: (kl -> Type) -> (kr -> Type)) where
   --   @a@ occurring under an @f@ in @t f@.
   --
   -- For requiring constraints of the form @c (f a)@, use 'AllTF'.
-  type AllT (c :: k -> Constraint) t :: Constraint
+
+  type AllT (c :: kl -> Constraint) t :: Constraint
+  -- type AllT :: (k -> Constraint) -> Constraint -> _
   type AllT c t = GAll 1 c (GAllRepT t)
 
-  taddDicts
-    :: forall c f x
-    .  AllT c t
-    => t f x
-    -> t (Dict c `Product` f) x
-
-  default taddDicts
-    :: forall c f x
-    .  ( CanDeriveConstraintsT c t f x
-       , AllT c t
-       )
-    => t f x
-    -> t (Dict c `Product` f) x
+  taddDicts :: forall c f x . AllT c t => t f x -> t (Dict c `Product` f) x
+  default taddDicts :: forall c f x . (CanDeriveConstraintsT c t f x , AllT c t) => t f x -> t (Dict c `Product` f) x
   taddDicts = gtaddDictsDefault
 
 
