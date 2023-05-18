@@ -83,7 +83,7 @@ import Data.Generics.GenericN (Rec(..))
 --
 --   See '/*/' for usage.
 (/*/)
-  :: ProductB b => b f -> b g -> b (Prod '[f, g])
+  :: (ProductB b, Functor f, Functor g) => b f -> b g -> b (Prod '[f, g])
 l /*/ r
   = bmap (\(Pair f g) -> Cons f (Cons g Unit)) (l `bprod` r)
 infixr 4 /*/
@@ -99,7 +99,7 @@ infixr 4 /*/
 --
 -- 'bmap' ('Data.Functor.Prod.uncurryn' f) (bf '/*' bg '/*/' bh)
 -- @
-(/*) :: ProductB b => b f -> b (Prod fs) -> b (Prod (f ': fs))
+(/*) :: (ProductB b, Functor f, Functor (Prod fs)) => b f -> b (Prod fs) -> b (Prod (f ': fs))
 l /* r =
   bmap (\(Pair f fs) -> oneTuple f `prod` fs) (l `bprod` r)
 infixr 4 /*
