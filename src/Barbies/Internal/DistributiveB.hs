@@ -63,7 +63,7 @@ import Data.Kind              (Type)
 -- 'Generic'.  Intuitively, it works on product types where the shape
 -- of a pure value is uniquely defined and every field is covered by
 -- the argument @f@.
-class (FunctorB b) => DistributiveB (b :: (k -> Type) -> Type) where
+class (FunctorB b) => DistributiveB (b :: (Type -> Type) -> Type) where
   bdistribute :: Functor f => f (b g) -> b (Compose f g)
 
   default bdistribute
@@ -78,7 +78,7 @@ bdistribute' :: (DistributiveB b, Functor f) => f (b Identity) -> b f
 bdistribute' = bmap (fmap runIdentity . getCompose) . bdistribute
 
 -- | Dual of `Barbies.Internal.TraversableB.btraverse`
-bcotraverse :: (DistributiveB b, Functor f) => (forall a . f (g a) -> f a) -> f (b g) -> b f
+bcotraverse :: (DistributiveB b, Functor f, Functor g) => (forall a . f (g a) -> f a) -> f (b g) -> b f
 bcotraverse h = bmap (h . getCompose) . bdistribute
 
 -- | Decompose a function returning a distributive barbie, into
