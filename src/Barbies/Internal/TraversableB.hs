@@ -44,7 +44,7 @@ class FunctorB b => TraversableB (b :: (Type -> Type) -> Type) where
   btraverse :: Applicative e => forall f g . (Functor f, Functor g) => (forall a . f a -> e (g a)) -> b f -> e (b g)
 
   default btraverse
-    :: ( Applicative e, CanDeriveTraversableB b f g)
+    :: ( Applicative e, CanDeriveTraversableB b f g, Functor f, Functor g)
     => (forall a . f a -> e (g a))
     -> b f
     -> e (b g)
@@ -55,7 +55,7 @@ class FunctorB b => TraversableB (b :: (Type -> Type) -> Type) where
 -- | Map each element to an action, evaluate these actions from left to right,
 --   and ignore the results.
 btraverse_
-  :: (TraversableB b, Applicative e)
+  :: (TraversableB b, Applicative e, Functor f)
   => (forall a. f a -> e c)
   -> b f
   -> e ()
@@ -65,7 +65,7 @@ btraverse_ f
 
 -- | Evaluate each action in the structure from left to right,
 --   and collect the results.
-bsequence :: (Applicative e, TraversableB b) => b (Compose e f) -> e (b f)
+bsequence :: (Applicative e, TraversableB b, Functor f) => b (Compose e f) -> e (b f)
 bsequence
   = btraverse getCompose
 
@@ -76,7 +76,7 @@ bsequence'
 
 
 -- | Map each element to a monoid, and combine the results.
-bfoldMap :: (TraversableB b, Monoid m) => (forall a. f a -> m) -> b f -> m
+bfoldMap :: (TraversableB b, Monoid m, Functor f) => (forall a. f a -> m) -> b f -> m
 bfoldMap f
   = execWr . btraverse_ (tell . f)
 
@@ -96,13 +96,14 @@ bfoldMap f
 type CanDeriveTraversableB b f g
   = ( GenericP 0 (b f)
     , GenericP 0 (b g)
+    , Functor f
     , GTraversable 0 f g (RepP 0 (b f)) (RepP 0 (b g))
     )
 
 -- | Default implementation of 'btraverse' based on 'Generic'.
 gbtraverseDefault
   :: forall b f g e
-  .  (Applicative e, CanDeriveTraversableB b f g)
+  .  (Applicative e, CanDeriveTraversableB b f g, Functor f, Functor g)
   => (forall a . f a -> e (g a))
   -> b f -> e (b g)
 gbtraverseDefault h
@@ -117,7 +118,7 @@ gbtraverseDefault h
 type P = Param
 
 instance
-  ( TraversableB b
+  ( TraversableB b, Functor f, Functor g
   ) => GTraversable 0 f g (Rec (b (P 0 f)) (b f))
                           (Rec (b (P 0 g)) (b g))
   where
@@ -128,6 +129,8 @@ instance
 instance
    ( Traversable h
    , TraversableB b
+   , Functor f
+   , Functor g
    ) => GTraversable 0 f g (Rec (h (b (P 0 f))) (h (b f)))
                            (Rec (h (b (P 0 g))) (h (b g)))
   where
@@ -141,6 +144,8 @@ instance
    ( Traversable h
    , Traversable m
    , TraversableB b
+   , Functor f
+   , Functor g
    ) => GTraversable 0 f g (Rec (m (h (b (P 0 f)))) (m (h (b f))))
                            (Rec (m (h (b (P 0 g)))) (m (h (b g))))
   where
