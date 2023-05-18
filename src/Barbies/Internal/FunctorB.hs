@@ -30,8 +30,8 @@ import Data.Kind              (Type)
 --
 -- There is a default 'bmap' implementation for 'Generic' types, so
 -- instances can derived automatically.
-class FunctorB (b :: (k -> Type) -> Type) where
-  bmap :: (forall a . f a -> g a) -> b f -> b g
+class FunctorB (b :: (Type -> Type) -> Type) where
+  bmap :: forall f g . (Functor f, Functor g) => (forall a . f a -> g a) -> b f -> b g
 
   default bmap
     :: forall f g
