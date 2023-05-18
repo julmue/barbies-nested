@@ -42,12 +42,12 @@ class FunctorB (b Covered) => BareB b where
     bcover = gbcoverDefault
 
 -- | Generalization of 'bstrip' to arbitrary functors
-bstripFrom :: BareB b => (forall a . f a -> a) -> b Covered f -> b Bare Identity
+bstripFrom :: (BareB b, Functor f) => (forall a . f a -> a) -> b Covered f -> b Bare Identity
 bstripFrom f
   = bstrip . bmap (Identity . f)
 
 -- | Generalization of 'bcover' to arbitrary functors
-bcoverWith :: BareB b => (forall a . a -> f a) -> b Bare Identity -> b Covered f
+bcoverWith :: (BareB b, Functor f) => (forall a . a -> f a) -> b Bare Identity -> b Covered f
 bcoverWith f
   = bmap (f . runIdentity) . bcover
 
