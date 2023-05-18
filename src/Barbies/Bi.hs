@@ -30,7 +30,7 @@ module Barbies.Bi
    --   However, we can sometimes reconstruct a bi-applicative from an
    --   'ApplicativeB' and a 'FunctorT'.
   , btpure
-  , btpure1
+  -- , btpure1
   , btprod
 
     -- * Wrappers
@@ -56,6 +56,10 @@ import Data.Functor.Product (Product(..))
 btmap
   :: ( FunctorB (b f)
      , FunctorT b
+     , Functor f
+     , Functor g
+     , Functor f'
+     , Functor g'
      )
   => (forall a . f a -> f' a)
   -> (forall a . g a -> g' a)
@@ -69,6 +73,8 @@ btmap hf hg
 btmap1
   :: ( FunctorB (b f)
      , FunctorT b
+     , Functor f
+     , Functor g
      )
   => (forall a . f a -> g a)
   -> b f f
@@ -87,6 +93,10 @@ bttraverse
   :: ( TraversableB (b f)
      , TraversableT b
      , Monad t
+     , Functor f
+     , Functor g
+     , Functor f'
+     , Functor g'
      )
   => (forall a . f a -> t (f' a))
   -> (forall a . g a -> t (g' a))
@@ -101,6 +111,8 @@ bttraverse1
   :: ( TraversableB (b f)
      , TraversableT b
      , Monad t
+     , Functor f
+     , Functor g
      )
   => (forall a . f a -> t (g a))
   -> b f f
@@ -115,6 +127,8 @@ bttraverse_
   :: ( TraversableB (b f)
      , TraversableT b
      , Monad e
+     , Functor f
+     , Functor g
      )
   => (forall a. f a -> e c)
   -> (forall a. g a -> e d)
@@ -131,6 +145,8 @@ btfoldMap
   :: ( TraversableB (b f)
      , TraversableT b
      , Monoid m
+     , Functor f
+     , Functor g
      )
   => (forall a. f a -> m)
   -> (forall a. g a -> m)
@@ -154,16 +170,17 @@ btpure fa ga
   = tmap (\Unit-> fa) (bpure ga)
 {-# INLINE btpure #-}
 
+-- FIXME: commented out
 -- | A version of 'btpure' specialized to a single argument.
-btpure1
-  :: ( ApplicativeB (b Unit)
-     , FunctorT b
-     )
-  => (forall a . f a)
-  -> b f f
-btpure1 h
-  = btpure h h
-{-# INLINE btpure1 #-}
+-- btpure1
+--   :: ( ApplicativeB (b Unit)
+--      , FunctorT b
+--      )
+--   => (forall a . f a)
+--   -> b f f
+-- btpure1 h
+--   = btpure h h
+-- {-# INLINE btpure1 #-}
 
 -- | Simultaneous product on both arguments.
 btprod
@@ -216,30 +233,31 @@ instance ApplicativeT b => ApplicativeB (Flip b f) where
   {-# INLINE bprod #-}
 
 
-#if __GLASGOW_HASKELL__ >= 806
+-- FIXME: commented out
+-- #if __GLASGOW_HASKELL__ >= 806
 -- ** The following instances require QuantifiedConstraints ** --
 
-instance (forall f. FunctorB (b f)) => FunctorT (Flip b) where
-  tmap h (Flip bxf)
-    = Flip (bmap h bxf)
-  {-# INLINE tmap #-}
+-- instance (forall f. FunctorB (b f)) => FunctorT (Flip b) where
+--   tmap h (Flip bxf)
+--     = Flip (bmap h bxf)
+--   {-# INLINE tmap #-}
 
-instance (forall f. DistributiveB (b f)) => DistributiveT (Flip b) where
-  tdistribute = Flip . bdistribute . fmap runFlip
-  {-# INLINE tdistribute #-}
+-- instance (forall f. DistributiveB (b f)) => DistributiveT (Flip b) where
+--   tdistribute = Flip . bdistribute . fmap runFlip
+--   {-# INLINE tdistribute #-}
 
-instance (forall f. TraversableB (b f)) => TraversableT (Flip b) where
-  ttraverse h (Flip bxf)
-    = Flip <$> btraverse h bxf
-  {-# INLINE ttraverse #-}
+-- instance (forall f. TraversableB (b f)) => TraversableT (Flip b) where
+--   ttraverse h (Flip bxf)
+--     = Flip <$> btraverse h bxf
+--   {-# INLINE ttraverse #-}
 
 
-instance (forall f. ApplicativeB (b f)) => ApplicativeT (Flip b) where
-  tpure fa
-    = Flip (bpure fa)
-  {-# INLINE tpure #-}
+-- instance (forall f. ApplicativeB (b f)) => ApplicativeT (Flip b) where
+--   tpure fa
+--     = Flip (bpure fa)
+--   {-# INLINE tpure #-}
 
-  tprod (Flip bxf) (Flip bxg)
-    = Flip (bprod bxf bxg)
-  {-# INLINE tprod #-}
-#endif
+--   tprod (Flip bxf) (Flip bxg)
+--     = Flip (bprod bxf bxg)
+--   {-# INLINE tprod #-}
+-- #endif
