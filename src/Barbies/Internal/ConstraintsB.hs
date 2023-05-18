@@ -14,7 +14,7 @@ module Barbies.Internal.ConstraintsB
   , bzipWithC
   , bzipWith3C
   , bzipWith4C
-  , bfoldMapC
+  -- , bfoldMapC
 
   , CanDeriveConstraintsB
   , gbaddDictsDefault
@@ -79,7 +79,7 @@ import Data.Generics.GenericN
 -- derive instance 'Generic' (T f)
 -- instance 'ConstraintsB' T
 -- @
-class FunctorB b => ConstraintsB (b :: (k -> Type) -> Type) where
+class FunctorB b => ConstraintsB (b :: (Type -> Type) -> Type) where
   -- | @'AllB' c b@ should contain a constraint @c a@ for each
   --   @a@ occurring under an @f@ in @b f@. E.g.:
   --
@@ -88,7 +88,7 @@ class FunctorB b => ConstraintsB (b :: (k -> Type) -> Type) where
   -- @
   --
   -- For requiring constraints of the form @c (f a)@, use 'AllBF'.
-  type AllB (c :: k -> Constraint) b :: Constraint
+  type AllB (c :: Type -> Constraint) b :: Constraint
   type AllB c b = GAll 0 c (GAllRepB b)
 
   baddDicts
@@ -118,7 +118,7 @@ class FunctorB b => ConstraintsB (b :: (k -> Type) -> Type) where
 -- >     showField :: forall a. Show a => Identity a -> Const String a
 -- >     showField (Identity a) = Const (show a)
 bmapC :: forall c b f g
-      .  (AllB c b, ConstraintsB b)
+      .  (AllB c b, ConstraintsB b, Functor f, Functor g, Functor (Dict c))
       => (forall a. c a => f a -> g a)
       -> b f
       -> b g
@@ -131,25 +131,25 @@ bmapC f bf
 -- | Like 'btraverse' but with a constraint on the elements of @b@.
 btraverseC
   :: forall c b f g e
-  .  (TraversableB b, ConstraintsB b, AllB c b, Applicative e)
+  .  (TraversableB b, ConstraintsB b, AllB c b, Applicative e, Functor f, Functor g, Functor (Dict c))
   => (forall a. c a => f a -> e (g a))
   -> b f
   -> e (b g)
 btraverseC f b
   = btraverse (\(Pair (Dict :: Dict c a) x) -> f x) (baddDicts b)
 
-bfoldMapC
-  :: forall c b m f
-  .  (TraversableB b, ConstraintsB b,  AllB c b, Monoid m)
-  => (forall a. c a => f a -> m)
-  -> b f
-  -> m
-bfoldMapC f = getConst . btraverseC @c (Const . f)
+-- bfoldMapC
+--   :: forall c b m f
+--   .  (TraversableB b, ConstraintsB b, AllB c b, Monoid m, Functor f)
+--   => (forall a. c a => f a -> m)
+--   -> b f
+--   -> m
+-- bfoldMapC f = getConst . btraverseC @c (Const . f)
 
 -- | Like 'Data.Functor.Barbie.bzipWith' but with a constraint on the elements of @b@.
 bzipWithC
   :: forall c b f g h
-  .  (AllB c b, ConstraintsB b, ApplicativeB b)
+  .  (AllB c b, ConstraintsB b, ApplicativeB b, Functor f, Functor g, Functor h, Functor (Dict c))
   => (forall a. c a => f a -> g a -> h a)
   -> b f
   -> b g
@@ -163,7 +163,7 @@ bzipWithC f bf bg
 -- | Like 'Data.Functor.Barbie.bzipWith3' but with a constraint on the elements of @b@.
 bzipWith3C
   :: forall c b f g h i
-  .  (AllB c b, ConstraintsB b, ApplicativeB b)
+  .  (AllB c b, ConstraintsB b, ApplicativeB b, Functor f, Functor g, Functor h, Functor i, Functor (Dict c))
   => (forall a. c a => f a -> g a -> h a -> i a)
   -> b f -> b g -> b h -> b i
 bzipWith3C f bf bg bh
@@ -175,7 +175,7 @@ bzipWith3C f bf bg bh
 -- | Like 'Data.Functor.Barbie.bzipWith4' but with a constraint on the elements of @b@.
 bzipWith4C
   :: forall c b f g h i j
-  .  (AllB c b, ConstraintsB b, ApplicativeB b)
+  .  (AllB c b, ConstraintsB b, ApplicativeB b, Functor f, Functor g, Functor h, Functor i, Functor j, Functor (Dict c))
   => (forall a. c a => f a -> g a -> h a -> i a -> j a)
   -> b f -> b g -> b h -> b i -> b j
 bzipWith4C f bf bg bh bi
@@ -198,7 +198,7 @@ type AllBF c f b = AllB (ClassF c f) b
 --   "out of the blue".
 bdicts
   :: forall c b
-  . (ConstraintsB b, ApplicativeB b,  AllB c b)
+  . (ConstraintsB b, ApplicativeB b,  AllB c b, Functor (Dict c))
   => b (Dict c)
 bdicts
   = bmap (\(Pair c _) -> c) $ baddDicts $ bpure Proxy
@@ -211,6 +211,9 @@ bpureC
   .  ( AllB c b
      , ConstraintsB b
      , ApplicativeB b
+     , Functor f
+     , Functor (Dict c)
+     , Functor (Dict (ClassF Monoid f))
      )
   => (forall a . c a => f a)
   -> b f
@@ -223,6 +226,8 @@ bmempty
   .  ( AllBF Monoid f b
      , ConstraintsB b
      , ApplicativeB b
+     , Functor f
+     , Functor (Dict (ClassF Monoid f))
      )
   => b f
 bmempty
